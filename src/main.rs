@@ -6,10 +6,13 @@ use std::fs::{File, OpenOptions};
 use std::io::{Read, Write};
 
 fn main() -> Result<(), std::io::Error> {
-    let query = std::env::args().nth(1)
-        .expect("No arguments given");
-    let outpath = std::env::args().nth(2)
-        .expect("No output file name given");
+    let args: Vec<String> = std::env::args().collect();
+    if args.len() != 3 {
+        println!("USAGE: cfb (record|compile) <FILE>");
+        std::process::exit(2);
+    }
+    let query = &args[1];
+    let outpath = &args[2];
 
     // Initialize Framebuffer struct
     let fb = Framebuffer::from_device("fb0");
@@ -35,7 +38,7 @@ fn main() -> Result<(), std::io::Error> {
     let fbpath = fb.get_path();
 
     // Loop to collect frame data as fast as possible
-    for _ in 1..=10 /*loop*/ {
+    for _ in 1..=60 /*loop*/ {
         let start = Instant::now();
         let mut framebuffer = File::open(&fbpath)?;
         buffer.clear();
@@ -46,7 +49,7 @@ fn main() -> Result<(), std::io::Error> {
         outfile.write_all(&start.elapsed().as_secs_f32().to_le_bytes())?;
     }
 
-    // Append time, frame number? 
+    // Append time, number of frames? 
 
     Ok(())
 }
