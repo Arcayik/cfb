@@ -1,9 +1,8 @@
-mod framebuffer;
-use crate::framebuffer::Framebuffer;
+use framebuffer::Framebuffer;
 
 use std::time::Instant;
-use std::fs::{File, OpenOptions};
-use std::io::{Read, Write};
+use std::fs::OpenOptions;
+use std::io::Write;
 
 fn main() -> Result<(), std::io::Error> {
     let args: Vec<String> = std::env::args().collect();
@@ -15,10 +14,12 @@ fn main() -> Result<(), std::io::Error> {
     let outpath = &args[2];
 
     // Initialize Framebuffer struct
-    let fb = Framebuffer::from_device("fb0");
+    let framebuffer = Framebuffer::new("/dev/fb0").unwrap();
+    let w = framebuffer.var_screen_info.xres;
+    let h = framebuffer.var_screen_info.yres;
+    let line_length = framebuffer.fix_screen_info.line_length;
+    let bytespp = framebuffer.var_screen_info.bits_per_pixel / 8;
 
-    // Initialize memory buffer
-    let mut buffer = Vec::with_capacity(fb.get_mem_size());
     // Create output file
     let mut outfile = OpenOptions::new()
         .create(true)
@@ -27,23 +28,20 @@ fn main() -> Result<(), std::io::Error> {
         .open(outpath)?;
 
     // Write File Header
-    let header: &[u8] = &[
-        &fb.get_width().to_le_bytes()[..],
-        &fb.get_height().to_le_bytes()[..],
-        &fb.get_depth().to_le_bytes()[..],
-    ].concat();
+    let header: &[u8] = &[w.to_le_bytes(), h.to_le_bytes(), bytespp.to_le_bytes()].concat();
     
     outfile.write_all(&header)?;
 
-    let fbpath = fb.get_path();
-
+    // Initialize memory buffer
+    let mut frame: Vec<u8> = vec![0u8; (line_length * h) as usize];
+    
     // Loop to collect frame data as fast as possible
-    for _ in 1..=60 /*loop*/ {
+    for _ in 1..=60 {
         let start = Instant::now();
-        let mut framebuffer = File::open(&fbpath)?;
-        buffer.clear();
-        framebuffer.read_to_end(&mut buffer)?;
-        outfile.write_all(&buffer)?;
+        frame.clear();
+        let frame = framebuffer.read_frame();
+
+        outfile.write_all(&frame)?;
 
         println!("TIME: {:?}", start.elapsed().as_secs_f32());
         outfile.write_all(&start.elapsed().as_secs_f32().to_le_bytes())?;
