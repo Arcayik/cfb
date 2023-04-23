@@ -1,3 +1,5 @@
+mod parse;
+
 use framebuffer::Framebuffer;
 
 use std::time::Instant;
@@ -36,19 +38,23 @@ fn main() -> Result<(), std::io::Error> {
     let mut frame: Vec<u8> = vec![0u8; (line_length * h) as usize];
     
     // Loop to collect frame data as fast as possible
-    for _ in 1..=60 {
+    for _ in 1..=15 {
         let start = Instant::now();
         frame.clear();
         let frame = framebuffer.read_frame();
 
         outfile.write_all(&frame)?;
 
-        println!("TIME: {:?}", start.elapsed().as_secs_f32());
-        outfile.write_all(&start.elapsed().as_secs_f32().to_le_bytes())?;
+        let time: f32 = start.elapsed().as_secs_f32();
+        println!("TIME: {:?}", time);
+        outfile.write_all(&time.to_le_bytes())?;
     }
 
-    // Append time, number of frames? 
+    let capture = parse::CaptureFile::from_path(outpath);
+    dbg!(&capture.width, &capture.height, &capture.depth);
+    capture.save_frames_as_png()?;
 
+    // Append time, number of frames? 
     Ok(())
 }
 
