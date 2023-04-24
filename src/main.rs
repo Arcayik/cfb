@@ -21,6 +21,7 @@ fn main() -> Result<(), std::io::Error> {
     let h = framebuffer.var_screen_info.yres;
     let line_length = framebuffer.fix_screen_info.line_length;
     let bytespp = framebuffer.var_screen_info.bits_per_pixel / 8;
+    let size: usize = (w * h * bytespp) as usize;
 
     // Create output file
     let mut outfile = OpenOptions::new()
@@ -31,7 +32,6 @@ fn main() -> Result<(), std::io::Error> {
 
     // Write File Header
     let header: &[u8] = &[w.to_le_bytes(), h.to_le_bytes(), bytespp.to_le_bytes()].concat();
-    
     outfile.write_all(&header)?;
 
     // Initialize memory buffer
@@ -53,6 +53,7 @@ fn main() -> Result<(), std::io::Error> {
     let capture = parse::CaptureFile::from_path(outpath);
     dbg!(&capture.width, &capture.height, &capture.depth);
     capture.save_frames_as_png()?;
+    //capture.png();
 
     // Append time, number of frames? 
     Ok(())

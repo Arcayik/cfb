@@ -9,7 +9,7 @@ pub struct CaptureFile {
     pub frames: Vec<Frame>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Frame{
     data: Vec<u8>,
     pub time: f32,
@@ -25,8 +25,8 @@ impl CaptureFile {
             .expect("Failed to read capture file");
         
         // Get Height, Width, Depth
-        let h = u32::from_le_bytes(data[0..4].try_into().unwrap());
-        let w = u32::from_le_bytes(data[4..8].try_into().unwrap());
+        let w = u32::from_le_bytes(data[0..4].try_into().unwrap());
+        let h = u32::from_le_bytes(data[4..8].try_into().unwrap());
         let d = u32::from_le_bytes(data[8..12].try_into().unwrap());
         dbg!(&h, &w, &d);
 
@@ -51,7 +51,7 @@ impl CaptureFile {
             frames.push(frame);
 
             // Increment startaddr
-            startaddr = endaddr + 8;
+            startaddr = endaddr + 4;
         }
 
         CaptureFile {
@@ -63,21 +63,48 @@ impl CaptureFile {
     }
 
     pub fn save_frames_as_png(&self) -> std::io::Result<()> {
+        use std::io::Write;
         use std::path::Path;
 
         let mut filenum = 1;
-        for frame in &self.frames {
+        let size = self.height * self.width * self.depth;
+        for mut frame in &self.frames {
+            let mut noalpha = frame.data.clone();
+            
+            // Remove alpha
+            noalpha.iter_mut()
+                .enumerate()
+                .filter(|(i,_)| i%4 == 3)
+                .map(|(_, e)| e)
+                .for_each(|x| *x = 255);
+            dbg!(&noalpha[0..8]);
+
+            // Swap Red and Blue
+            for i in (0..noalpha.len()-2).step_by(4) {
+                noalpha.swap(i, i+2);
+            }
+
+            // Write Raw Frame
             //let mut file = OpenOptions::new()
             //    .create(true)
             //    .write(true)
             //    .truncate(true)
-            //    .open(format!("frame{}.png", filenum))?;
+            //    .open(format!("frame{}", filenum))?;
             //file.write_all(&frame.data[..])?;
-            image::save_buffer(&Path::new(format!("frame{}.png", filenum).as_str()), &frame.data[..], self.width, self.height, image::ColorType::Rgba8).unwrap();
+
+            // Write Image
+            image::save_buffer(
+                &Path::new(format!("output/frame{}.png", filenum).as_str()),
+                &noalpha[..],
+                self.width,
+                self.height,
+                image::ColorType::Rgba8)
+                .unwrap();
+
             filenum += 1;
+            print!(".");
         }
         Ok(())
     }
-
 }
 
