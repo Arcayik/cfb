@@ -1,0 +1,11 @@
+-- TEST PLAN --
+
+- Argument Parsing
+
+- Test on Different Installations
+    Small Laptop
+    Desktop
+    Small Desktop
+    Old Laptop/webserver
+
+- Implement Rust's built in Tests!
