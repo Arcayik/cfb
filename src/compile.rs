@@ -61,7 +61,7 @@ impl CaptureFile {
 
             let frame = Frame {
                 data: framedata,
-                time: f32::from_le_bytes(data[endaddr .. endaddr+4].try_into().unwrap()),
+                time: timestamp,
             };
 
             // Append frame to CaptureFile 'frames' Vec
@@ -107,14 +107,13 @@ impl CaptureFile {
             }
 
             filenum += 1;
-            print!(".");
+            print!("[{}/{}]", filenum, &self.frames.len());
         }
         Ok(())
     }
 
     pub fn output_video(&mut self) {
         use std::io::{Cursor, Seek, SeekFrom};
-        use image::{EncodableLayout, Rgb, RgbImage};
         use minimp4::Mp4Muxer;
         use openh264::encoder::{Encoder, EncoderConfig};
 
@@ -128,14 +127,14 @@ impl CaptureFile {
 
         let mut buf = Vec::new();
 
+        let mut framenum = 1;
         for frame in &self.frames {
-
             // Convert RGB into YUV
             let mut yuv = openh264::formats::YUVBuffer::new(w, h);
             
             // Calculate what fraction of a second the frame takes
             let repeatnum = (frame.time * 60.0).round() as i32;
-            println!("FRAME TIME: {}", repeatnum); // 60 fps
+            println!("[{}/{}]: {}x", framenum, &self.frames.len(), repeatnum);
 
             // Write frame repeatnum times to fill 60 fps for proper timing
             for _ in 0..repeatnum {
@@ -146,6 +145,8 @@ impl CaptureFile {
 
                 bitstream.write_vec(&mut buf);
             }
+
+            framenum += 1;
         }
 
         let mut video_buffer = Cursor::new(Vec::new());
