@@ -59,7 +59,7 @@ impl CaptureFile {
                     framedata.swap(i, i+2);
                 }
 
-            let mut frame = Frame {
+            let frame = Frame {
                 data: framedata,
                 time: f32::from_le_bytes(data[endaddr .. endaddr+4].try_into().unwrap()),
             };
@@ -85,9 +85,7 @@ impl CaptureFile {
 
         let mut filenum = 1;
         let size = self.height * self.width * self.depth;
-        for mut frame in &self.frames {
-            let mut noalpha = frame.data.clone();
-
+        for frame in &self.frames {
             match format {
                 FrameFormats::Raw => {
                     let mut file = OpenOptions::new()
@@ -100,7 +98,7 @@ impl CaptureFile {
                 FrameFormats::Png => {
                     image::save_buffer(
                         &Path::new(format!("output/frame{}.png", filenum).as_str()),
-                        &noalpha[..],
+                        &frame.data[..],
                         self.width,
                         self.height,
                         image::ColorType::Rgba8
