@@ -10,7 +10,6 @@ pub fn capture(fbdev: &str, path: &str) -> Result<(), std::io::Error> {
     let h = framebuffer.var_screen_info.yres;
     let line_length = framebuffer.fix_screen_info.line_length;
     let bytespp = framebuffer.var_screen_info.bits_per_pixel / 8;
-    let size: usize = (w * h * bytespp) as usize;
 
     // Create output file
     let mut outfile = OpenOptions::new()
@@ -25,7 +24,7 @@ pub fn capture(fbdev: &str, path: &str) -> Result<(), std::io::Error> {
 
     // Initialize memory buffer
     let mut frame: Vec<u8> = vec![0u8; (line_length * h) as usize];
-    
+
     // Loop to collect frame data as fast as possible
     for i in 1..=30 {
         let start = Instant::now();

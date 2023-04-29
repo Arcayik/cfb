@@ -1,11 +1,6 @@
 use std::fs::OpenOptions;
 use std::io::Read;
 
-pub enum FrameFormats {
-    Raw,
-    Png,
-}
-
 #[derive(Debug)]
 pub struct CaptureFile {
     pub height: u32,
@@ -18,6 +13,23 @@ pub struct CaptureFile {
 pub struct Frame{
     data: Vec<u8>,
     pub time: f32,
+}
+
+#[derive(Debug, Clone, clap::ValueEnum)]
+pub enum OutputFormat{
+    Raw,
+    Png,
+    Mp4,
+}
+
+
+pub fn compile(file: &str, format: &OutputFormat) -> std::io::Result<()> {
+    let mut capture = CaptureFile::from_path(file);
+    match format {
+        OutputFormat::Raw => capture.output_raw(),
+        OutputFormat::Png => capture.output_png(),
+        OutputFormat::Mp4 => capture.output_video(),
+    }
 }
 
 impl CaptureFile {
@@ -79,32 +91,17 @@ impl CaptureFile {
         }
     }
 
-    pub fn output_frame(&self, format: FrameFormats) -> std::io::Result<()> {
+    pub fn output_raw(&self) -> std::io::Result<()> {
         use std::io::Write;
-        use std::path::Path;
 
         let mut filenum = 1;
-        let size = self.height * self.width * self.depth;
         for frame in &self.frames {
-            match format {
-                FrameFormats::Raw => {
-                    let mut file = OpenOptions::new()
-                        .create(true)
-                        .write(true)
-                        .truncate(true)
-                        .open(format!("frame{}", filenum))?;
-                    file.write_all(&frame.data[..])?;
-                }
-                FrameFormats::Png => {
-                    image::save_buffer(
-                        &Path::new(format!("output/frame{}.png", filenum).as_str()),
-                        &frame.data[..],
-                        self.width,
-                        self.height,
-                        image::ColorType::Rgba8
-                    ).unwrap();
-                }
-            }
+            let mut file = OpenOptions::new()
+                .create(true)
+                .write(true)
+                .truncate(true)
+                .open(format!("frame{}", filenum))?;
+            file.write_all(&frame.data[..])?;
 
             filenum += 1;
             print!("[{}/{}]", filenum, &self.frames.len());
@@ -112,7 +109,26 @@ impl CaptureFile {
         Ok(())
     }
 
-    pub fn output_video(&mut self) {
+    pub fn output_png(&self) -> std::io::Result<()> {
+        use std::path::Path;
+
+        let mut filenum = 1;
+        for frame in &self.frames {
+            image::save_buffer(
+                &Path::new(format!("output/frame{}.png", filenum).as_str()),
+                &frame.data[..],
+                self.width,
+                self.height,
+                image::ColorType::Rgba8
+                ).unwrap();
+
+            filenum += 1;
+            print!("[{}/{}]", filenum, &self.frames.len());
+        }
+        Ok(())
+    }
+
+    pub fn output_video(&mut self) -> Result<(), std::io::Error> {
         use std::io::{Cursor, Seek, SeekFrom};
         use minimp4::Mp4Muxer;
         use openh264::encoder::{Encoder, EncoderConfig};
@@ -161,6 +177,8 @@ impl CaptureFile {
         video_buffer.read_to_end(&mut video_bytes).unwrap();
 
         std::fs::write("recording.mp4", &video_bytes).unwrap();
+
+        Ok(())
     }
 }
 

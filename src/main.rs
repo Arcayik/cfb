@@ -1,24 +1,22 @@
 mod record;
 mod compile;
+use compile::OutputFormat;
 
-fn usage() { println!("USAGE: cfb (record|compile) <FILE>"); }
+mod cli;
+use crate::cli::{Cli, Commands}; 
+use clap::Parser;
 
 fn main() -> Result<(), std::io::Error> {
-    let args: Vec<String> = std::env::args().collect();
-    if args.len() != 3 {
-        usage();
-        std::process::exit(2);
-    }
-    let query = &args[1];
-    let outpath = &args[2];
-
-    let fbdev = "/dev/fb0";
-
-    match query.as_str() {
-        "record"  => record::capture(fbdev, &outpath),
-        "compile" => Ok(compile::CaptureFile::from_path(&outpath).output_video()),
-        _ => { usage(); std::process::exit(2); }
-    }?;
+    let args = Cli::parse();
+    dbg!(&args);
+    match &args.command {
+        Commands::Record(arg) => {
+            record::capture(arg.device.as_str(), arg.file.as_str())?;
+        },
+        Commands::Compile(arg) => {
+            compile::compile(arg.file.as_str(), &arg.format)?;
+        }
+    };
 
     Ok(())
 }

@@ -6,9 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+clap = { version = "4.2.5", features = ["derive"] }
 framebuffer = "0.3.1"
 image = "0.24.6"
-imageproc = "0.23.0"
 minimp4 = "0.1.0"
 openh264 = "0.4.0"
 
