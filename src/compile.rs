@@ -127,7 +127,7 @@ impl CaptureFile {
         Ok(())
     }
 
-    pub fn output_video(&self, filename: &str) -> Result<(), std::io::Error> {
+    pub fn output_video(&self, filename: &str) -> std::io::Result<()> {
         use std::io::{Cursor, Seek, SeekFrom};
         use minimp4::Mp4Muxer;
         use openh264::encoder::{Encoder, EncoderConfig};
