@@ -14,7 +14,7 @@ fn main() -> Result<(), std::io::Error> {
             record::capture(arg.device.as_str(), arg.file.as_str())?;
         },
         Commands::Compile(arg) => {
-            compile::compile(arg.file.as_str(), &arg.format)?;
+            compile::compile(arg.file.as_str(), &arg.format, &arg.output)?;
         }
     };
 

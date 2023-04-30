@@ -19,7 +19,7 @@ pub enum Commands {
 
 #[derive(Args, Debug)]
 pub struct RecordArgs {
-    #[arg(default_value = "recording.cap")]
+    #[arg()]
     pub file: String,
 
     #[arg(short, long)]
@@ -31,22 +31,13 @@ pub struct RecordArgs {
 pub struct CompileArgs {
     #[arg()]
     pub file: String,
+    
     #[arg(short, long)]
     #[arg(default_value = "mp4")]
     #[arg(value_enum)]
     pub format: crate::OutputFormat,
+
+    #[arg(short)]
+    pub output: String,
 }
 
-/*
-impl CompileArgs {
-    // Method to convert entered string into concrete enum of choices
-    pub fn get_format_enum(&self) -> OutputFormat {
-        match self.format.as_str() {
-            "raw" => OutputFormat::Raw,
-            "png" => OutputFormat::Png,
-            "mp4" => OutputFormat::Mp4,
-            _ => panic!("fail"),
-        }
-    }
-}
-*/

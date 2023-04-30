@@ -4,7 +4,7 @@ RECORDING:
 - Research more optimizations
 
 COMPILING:
-- Parse .cap file
-- Put frame data into Vec<ImageBuffer> (or other structure)
-- Compile Images into video (which format? which library?)
+DONE - Parse .cap file
+DONE - Put frame data into Vec<ImageBuffer> (or other structure)
+DONE - Compile Images into video (which format? which library?)
 
