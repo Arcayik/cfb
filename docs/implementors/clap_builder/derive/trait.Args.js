@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"cfb":[["impl Args for <a class=\"struct\" href=\"cfb/cli/struct.CompileArgs.html\" title=\"struct cfb::cli::CompileArgs\">CompileArgs</a>"],["impl Args for <a class=\"struct\" href=\"cfb/cli/struct.Cli.html\" title=\"struct cfb::cli::Cli\">Cli</a>"],["impl Args for <a class=\"struct\" href=\"cfb/cli/struct.RecordArgs.html\" title=\"struct cfb::cli::RecordArgs\">RecordArgs</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
