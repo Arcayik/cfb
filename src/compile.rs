@@ -1,6 +1,9 @@
+//! Compiling the capture file to a human visible format.
+
 use std::fs::OpenOptions;
 use std::io::Read;
 
+/// Contains data parsed from a capture file.
 #[derive(Debug)]
 pub struct CaptureFile {
     pub height: u32,
@@ -9,19 +12,35 @@ pub struct CaptureFile {
     pub frames: Vec<Frame>,
 }
 
+/// Contains a frame's pixel data and time taken to get the frame
 #[derive(Debug, Clone)]
 pub struct Frame{
     data: Vec<u8>,
     pub time: f32,
 }
 
+/// Available compilation outputs
 #[derive(Debug, Clone, clap::ValueEnum)]
 pub enum OutputFormat{
+    /// Raw data as it would be found in the framebuffer.
+    /// These files can be piped back into the framebuffer device for viewing if you so desire.
+    /// ```console
+    /// $ cat frameN > /dev/fb0
+    /// ```
     Raw,
+    /// PNG images for each frame.
+    /// You can create a video with these images using a tool of your choice.
+    /// Example with ffmpeg:
+    /// ```console
+    /// $ ffmpeg -framerate 30 -pattern_type glob -i 'frame*.png' -c:v libx264 -pix_fmt yuv420p out.mp4
+    /// ```
+    /// It is recommended that you use the average framerate of the recording.
     Png,
+    /// MP4 video encoded natively from frame data using [`minimp4`] and [`openh264`].
     Mp4,
 }
 
+/// Takes command-line args passed in from [main()](`crate::main()`)
 pub fn compile(file: &str, format: &OutputFormat, output: &str) -> std::io::Result<()> {
     let capture = CaptureFile::from_path(file);
     match format {
@@ -32,6 +51,7 @@ pub fn compile(file: &str, format: &OutputFormat, output: &str) -> std::io::Resu
 }
 
 impl CaptureFile {
+    /// Create a new [`CaptureFile`] from data contained in a capture file.
     pub fn from_path(capture: &str) -> CaptureFile {
         let mut data = Vec::new();
         let mut file = OpenOptions::new()
@@ -65,10 +85,10 @@ impl CaptureFile {
                 .map(|(_, e)| e)
                 .collect::<Vec<_>>();
 
-                // Swap Red and Blue
-                for i in (0..framedata.len()-2).step_by(3) {
-                    framedata.swap(i, i+2);
-                }
+            // Swap Red and Blue
+            for i in (0..framedata.len()-2).step_by(3) {
+                framedata.swap(i, i+2);
+            }
 
             let frame = Frame {
                 data: framedata,
@@ -90,6 +110,7 @@ impl CaptureFile {
         }
     }
 
+    /// Writes the [raw](`OutputFormat::Raw`) data from each [`Frame`] to a batch of individual files.
     pub fn output_raw(&self, filename: &str) -> std::io::Result<()> {
         use std::io::Write;
 
@@ -108,6 +129,7 @@ impl CaptureFile {
         Ok(())
     }
 
+    /// Write a batch of [png](`OutputFormat::Raw`) images from [`Frame`] data using [`image`].
     pub fn output_png(&self, filename: &str) -> std::io::Result<()> {
         use std::path::Path;
 
@@ -127,12 +149,13 @@ impl CaptureFile {
         Ok(())
     }
 
+    /// Encodes an [mp4](`OutputFormat::Mp4`) video from [`Frame`] data using [`minimp4`] and [`openh264`].
     pub fn output_video(&self, filename: &str) -> std::io::Result<()> {
         use std::io::{Cursor, Seek, SeekFrom};
         use minimp4::Mp4Muxer;
         use openh264::encoder::{Encoder, EncoderConfig};
 
-        println!("Compiling...");
+        println!("Compiling {filename}");
 
         let h = self.height as usize;
         let w = self.width as usize;
@@ -182,3 +205,17 @@ impl CaptureFile {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn alpha_removal_works() {
+        let pixels = [255, 255, 255, 0, 100, 100, 100, 0, 175, 0, 0, 0];
+        let framedata = pixels[..].to_vec()
+            .into_iter()
+            .enumerate()
+            .filter(|&(i, _)| i % 4 != 3)
+            .map(|(_, e)| e)
+            .collect::<Vec<_>>();
+        assert_eq!(framedata, [255, 255, 255, 100, 100, 100, 175, 0, 0]);
+    }
+}

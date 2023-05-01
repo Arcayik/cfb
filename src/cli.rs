@@ -1,5 +1,7 @@
+//! Parsing command-line arguments.
 use clap::{Args, Parser, Subcommand};
 
+/// Arguments passed by the command line.
 #[derive(Parser, Debug)]
 #[command(name = "cfb")]
 #[command(author = "Blakely H. <bhaug1@ocdsb.ca>")]
@@ -11,12 +13,15 @@ pub struct Cli {
     pub command: Commands,
 }
 
+/// The choice between Recording and Compiling a video.
+/// Each containing their corresponding arguments.
 #[derive(Subcommand, Debug)]
 pub enum Commands {
     Record(RecordArgs),
     Compile(CompileArgs),
 }
 
+/// Arguments that apply to [`Commands::Record`] only.
 #[derive(Args, Debug)]
 pub struct RecordArgs {
     #[arg()]
@@ -27,6 +32,7 @@ pub struct RecordArgs {
     pub device: String,
 }
 
+/// Arguments that apply to [`Commands::Compile`] only.
 #[derive(Args, Debug)]
 pub struct CompileArgs {
     #[arg()]

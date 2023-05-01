@@ -1,3 +1,5 @@
+//! Recording the screen.
+
 use framebuffer::Framebuffer;
 use std::time::Instant;
 use std::fs::OpenOptions;
@@ -7,6 +9,7 @@ use std::io::Write;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 
+/// Opens framebuffer device and repeatedly appends pixel data to file.
 pub fn capture(fbdev: &str, path: &str) -> Result<(), std::io::Error> {
     // Initialize Framebuffer struct
     let framebuffer = Framebuffer::new(fbdev).unwrap();
@@ -52,7 +55,7 @@ pub fn capture(fbdev: &str, path: &str) -> Result<(), std::io::Error> {
         outfile.write_all(&time.to_le_bytes())?;
         framenum += 1;
     }
-    println!("Exit signal recieved, recording stopped.");
+    println!("Exit signal recieved, recording saved to {path}.");
 
     Ok(())
 }
