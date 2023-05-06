@@ -21,7 +21,7 @@ pub enum Commands {
     Compile(CompileArgs),
 }
 
-/// Arguments that apply to [`Commands::Record`] only.
+/// Record the screen and save it to a capture file.
 #[derive(Args, Debug)]
 pub struct RecordArgs {
     #[arg()]
@@ -32,7 +32,7 @@ pub struct RecordArgs {
     pub device: String,
 }
 
-/// Arguments that apply to [`Commands::Compile`] only.
+/// Compile a capture file to desired output format.
 #[derive(Args, Debug)]
 pub struct CompileArgs {
     #[arg()]

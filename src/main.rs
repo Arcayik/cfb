@@ -14,10 +14,28 @@
 //! ```console
 //! $ cfb compile capture.cap -o video.mp4 -f mp4
 //! ```
-//! Format Options: 
-//! [raw](`crate::compile::OutputFormat::Raw`),
-//! [png](`crate::compile::OutputFormat::Png`),
-//! [mp4](`crate::compile::OutputFormat::Mp4`)
+//! ## Format Options
+//!
+//! # [Raw](`crate::compile::OutputFormat::Raw`)
+//!
+//! Raw data as it would be found in the framebuffer.
+//! These files can be piped back into the framebuffer device for viewing if you so desire.
+//! ```console
+//! $ cat frameN > /dev/fb0
+//! ```
+//!
+//! # [Png](`crate::compile::OutputFormat::Png`)
+//!
+//! PNG images for each frame.
+//! You can create a video with these images using a tool of your choice.
+//! Example with ffmpeg:
+//! ```console
+//! $ ffmpeg -framerate 30 -pattern_type glob -i 'frame*.png' -c:v libx264 -pix_fmt yuv420p out.mp4
+//! ```
+//! It is recommended that you use the average framerate of the recording.
+//!
+//! # [Mp4](`crate::compile::OutputFormat::Mp4`)
+//! MP4 video encoded natively from frame data using [`minimp4`] and [`openh264`].
 
 mod record;
 mod compile;
@@ -43,4 +61,3 @@ fn main() -> Result<(), std::io::Error> {
 
     Ok(())
 }
-

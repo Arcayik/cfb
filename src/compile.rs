@@ -22,21 +22,8 @@ pub struct Frame{
 /// Available compilation outputs
 #[derive(Debug, Clone, clap::ValueEnum)]
 pub enum OutputFormat{
-    /// Raw data as it would be found in the framebuffer.
-    /// These files can be piped back into the framebuffer device for viewing if you so desire.
-    /// ```console
-    /// $ cat frameN > /dev/fb0
-    /// ```
     Raw,
-    /// PNG images for each frame.
-    /// You can create a video with these images using a tool of your choice.
-    /// Example with ffmpeg:
-    /// ```console
-    /// $ ffmpeg -framerate 30 -pattern_type glob -i 'frame*.png' -c:v libx264 -pix_fmt yuv420p out.mp4
-    /// ```
-    /// It is recommended that you use the average framerate of the recording.
     Png,
-    /// MP4 video encoded natively from frame data using [`minimp4`] and [`openh264`].
     Mp4,
 }
 

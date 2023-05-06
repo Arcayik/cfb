@@ -70,7 +70,7 @@
     Compile(CompileArgs),
 }
 
-<span class="doccomment">/// Arguments that apply to [`Commands::Record`] only.
+<span class="doccomment">/// Record the screen and save it to a capture file.
 </span><span class="attr">#[derive(Args, Debug)]
 </span><span class="kw">pub struct </span>RecordArgs {
     <span class="attr">#[arg()]
@@ -81,7 +81,7 @@
     </span><span class="kw">pub </span>device: String,
 }
 
-<span class="doccomment">/// Arguments that apply to [`Commands::Compile`] only.
+<span class="doccomment">/// Compile a capture file to desired output format.
 </span><span class="attr">#[derive(Args, Debug)]
 </span><span class="kw">pub struct </span>CompileArgs {
     <span class="attr">#[arg()]
