@@ -49,7 +49,6 @@ use clap::Parser;
 /// to parse arguments to pass them to the relevant function in each module.
 fn main() -> Result<(), std::io::Error> {
     let args = Cli::parse();
-    dbg!(&args);
     match &args.command {
         Commands::Record(arg) => {
             record::capture(arg.device.as_str(), arg.file.as_str())?;

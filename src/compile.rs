@@ -101,6 +101,8 @@ impl CaptureFile {
     pub fn output_raw(&self, filename: &str) -> std::io::Result<()> {
         use std::io::Write;
 
+        println!("Compiling {filename} (raw)");
+
         let mut filenum = 1;
         for frame in &self.frames {
             let mut file = OpenOptions::new()
@@ -111,7 +113,7 @@ impl CaptureFile {
             file.write_all(&frame.data[..])?;
 
             filenum += 1;
-            print!("[{}/{}]", filenum, &self.frames.len());
+            println!("[{}/{}]", filenum, &self.frames.len());
         }
         Ok(())
     }
@@ -119,6 +121,8 @@ impl CaptureFile {
     /// Write a batch of [png](`OutputFormat::Raw`) images from [`Frame`] data using [`image`].
     pub fn output_png(&self, filename: &str) -> std::io::Result<()> {
         use std::path::Path;
+
+        println!("Compiling {filename} (png)");
 
         let mut filenum = 1;
         for frame in &self.frames {
@@ -131,7 +135,7 @@ impl CaptureFile {
                 ).unwrap();
 
             filenum += 1;
-            print!("[{}/{}]", filenum, &self.frames.len());
+            println!("[{}/{}]", filenum, &self.frames.len());
         }
         Ok(())
     }
@@ -142,7 +146,7 @@ impl CaptureFile {
         use minimp4::Mp4Muxer;
         use openh264::encoder::{Encoder, EncoderConfig};
 
-        println!("Compiling {filename}");
+        println!("Compiling {filename} (mp4)");
 
         let h = self.height as usize;
         let w = self.width as usize;
@@ -158,9 +162,8 @@ impl CaptureFile {
             let mut yuv = openh264::formats::YUVBuffer::new(w, h);
             
             // Calculate what fraction of a second the frame takes
-            dbg!(frame.time);
             let repeatnum = (frame.time * 60.0).round() as i32;
-            println!("[{}/{}]: {}x", framenum, &self.frames.len(), repeatnum);
+            println!("[{}/{}]: t={} ({}x)", framenum, &self.frames.len(), frame.time, repeatnum);
 
             // Write frame repeatnum times to fill 60 fps for proper timing
             for _ in 0..repeatnum {
